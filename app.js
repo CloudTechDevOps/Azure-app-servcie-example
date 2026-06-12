@@ -1,17 +1,14 @@
 const express = require("express");
-const { Pool } = require("pg");
+const mysql = require("mysql2/promise");
 
 const app = express();
 
-const pool = new Pool({
+const pool = mysql.createPool({
   host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT || 5432,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT || 3306
 });
 
 app.get("/", (req, res) => {
@@ -20,11 +17,11 @@ app.get("/", (req, res) => {
 
 app.get("/users", async (req, res) => {
   try {
-    const result = await pool.query(
+    const [rows] = await pool.query(
       "SELECT id, name, email FROM users"
     );
 
-    res.json(result.rows);
+    res.json(rows);
   } catch (err) {
     console.error(err);
     res.status(500).json({
